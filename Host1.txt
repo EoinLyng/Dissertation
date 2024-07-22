@@ -1,6 +1,8 @@
 # Set details
 $SERVERNAME = "Host1"
 
+#Get Interface number of NIC
+Get-WMIObject Win32_networkadapter | Select-Object Name, AdapterType, InterfaceIndex | Format-List
 
 # Set the IP address for the Host
 
