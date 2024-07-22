@@ -1,0 +1,4 @@
+# Set Server Name
+$SERVERNAME = "Host1"
+
+Install-WindowsFeature -Name Hyper-V -ComputerName Host1 -IncludeManagementTools -Restart

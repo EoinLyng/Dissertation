@@ -1,0 +1,46 @@
+$SERVERNAME = "dc2"
+$FOREST = "maynooth.ads.electric-petrol.ie"
+$DNSNAME = $SERVERNAME + "." + $FOREST
+
+# Set the IP address for the DC
+$SERVERNAME = "dc2"
+$FOREST = "maynooth.ads.electric-petrol.ie"
+$DNSNAME = $SERVERNAME + "." + $FOREST
+Rename-Computer -NewName $SERVERNAME
+
+#Run Get-NetIPAddress to identify the correct InterfaceIndex (7 in this case)
+Get-NetIPAddress
+
+New-NetIPAddress -InterfaceIndex 7 -IPAddress 10.34.6.12 -PrefixLength 24 
+Set-DnsClientServerAddress -InterfaceIndex 7 -ServerAddresses 10.34.6.11
+Restart-Computer
+
+#Enable remote connections from Powershell to Core Server
+Enable-PSRemoting
+
+$SERVERNAME = "dc2"
+$FOREST = "maynooth.ads.electric-petrol.ie"
+$DNSNAME = $SERVERNAME + "." + $FOREST
+# Join the existing Domain with user "maynooth\administrator"
+Add-Computer -DomainName $FOREST -Restart
+
+
+
+# Install software
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+
+# Add this as a second DC
+
+$SERVERNAME = "dc2"
+$FOREST = "maynooth.ads.electric-petrol.ie"
+$DNSNAME = $SERVERNAME + "." + $FOREST
+Install-ADDSDomainController -DomainName $FOREST -InstallDns:$true -Credential (Get-Credential "maynooth\administrator")
+
+
+
+# Configure DHCP
+$SERVERNAME = "dc2"
+$FOREST = "maynooth.ads.electric-petrol.ie"
+$DNSNAME = $SERVERNAME + "." + $FOREST
+Install-WindowsFeature DHCP -IncludeManagementTools
+Add-DhcpServerInDC -DnsName $DNSNAME -IPAddress 10.34.6.12
