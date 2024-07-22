@@ -10,6 +10,7 @@ $SERVERNAME = "Host1"
 Rename-Computer -NewName $SERVERNAME
 Get-NetIPAddress
 New-NetIPAddress -InterfaceIndex 4 -IPAddress 192.168.0.10 -DefaultGateway "192.168.0.1" -PrefixLength 24 
+Set-DnsClientServerAddress -InterfaceIndex 4 -ServerAddresses ("192.168.0.1","8.8.8.8")
 Restart-Computer
 
 
