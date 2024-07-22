@@ -2,10 +2,11 @@
 $SERVERNAME = "Host1"
 
 
-# Set the IP address for the DC (10.34.6.0 for Infrastructure servers as per network plan) No connectivity so no Default Gateway
+# Set the IP address for the Host
+
 Rename-Computer -NewName $SERVERNAME
 Get-NetIPAddress
-New-NetIPAddress -InterfaceIndex 16 -IPAddress 192.168.0.10 -PrefixLength 24 
+New-NetIPAddress -InterfaceIndex 16 -IPAddress 192.168.0.10 -DefaultGateway "192.168.0.1" -PrefixLength 24 
 Restart-Computer
 
 
