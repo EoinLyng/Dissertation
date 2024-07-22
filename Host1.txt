@@ -8,7 +8,7 @@ Get-WMIObject Win32_networkadapter | Select-Object Name, AdapterType, InterfaceI
 
 Rename-Computer -NewName $SERVERNAME
 Get-NetIPAddress
-New-NetIPAddress -InterfaceIndex 16 -IPAddress 192.168.0.10 -DefaultGateway "192.168.0.1" -PrefixLength 24 
+New-NetIPAddress -InterfaceIndex 4 -IPAddress 192.168.0.10 -DefaultGateway "192.168.0.1" -PrefixLength 24 
 Restart-Computer
 
 
