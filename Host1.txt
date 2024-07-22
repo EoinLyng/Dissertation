@@ -1,4 +1,13 @@
-# Set Server Name
+# Set details
 $SERVERNAME = "Host1"
 
+
+# Set the IP address for the DC (10.34.6.0 for Infrastructure servers as per network plan) No connectivity so no Default Gateway
+Rename-Computer -NewName $SERVERNAME
+Get-NetIPAddress
+New-NetIPAddress -InterfaceIndex 16 -IPAddress 192.168.0.10 -PrefixLength 24 
+Restart-Computer
+
+
+#Install Hyper-V Feature
 Install-WindowsFeature -Name Hyper-V -ComputerName Host1 -IncludeManagementTools -Restart
