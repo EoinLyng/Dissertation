@@ -1,0 +1,3 @@
+#change ubuntu hostname
+
+sudo hostnamectl set-hostname OpenVNP1 --pretty
