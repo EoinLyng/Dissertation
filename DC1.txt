@@ -7,8 +7,8 @@ $DNSNAME = $SERVERNAME + "." + $FOREST
 # Set the IP address for the DC 
 Rename-Computer -NewName $SERVERNAME
 Get-NetIPAddress
-New-NetIPAddress -InterfaceIndex 16 -IPAddress 192.168.0.11 -DefaultGateway "192.168.0.1" -PrefixLength 24 
-Set-DnsClientServerAddress -InterfaceIndex 4 -ServerAddresses ("192.168.0.1","8.8.8.8")
+New-NetIPAddress -InterfaceIndex 6 -IPAddress 192.168.0.11 -DefaultGateway "192.168.0.1" -PrefixLength 24 
+Set-DnsClientServerAddress -InterfaceIndex 6 -ServerAddresses ("192.168.0.1","8.8.8.8")
 
 Restart-Computer
 
