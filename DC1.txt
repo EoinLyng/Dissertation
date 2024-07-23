@@ -1,13 +1,14 @@
 
 # Set details
 $SERVERNAME = "dc1"
-$FOREST = "maynooth.ads.electric-petrol.ie"
+$FOREST = "ads.eoinlyng.ie"
 $DNSNAME = $SERVERNAME + "." + $FOREST
 
-# Set the IP address for the DC (10.34.6.0 for Infrastructure servers as per network plan) No connectivity so no Default Gateway
-Rename-Computer -NewName $SERVERNAME
+# Set the IP address for the DC Rename-Computer -NewName $SERVERNAME
 Get-NetIPAddress
-New-NetIPAddress -InterfaceIndex 16 -IPAddress 10.34.6.11 -PrefixLength 24 
+New-NetIPAddress -InterfaceIndex 16 -IPAddress 192.168.0.11 -DefaultGateway "192.168.0.1" -PrefixLength 24 
+Set-DnsClientServerAddress -InterfaceIndex 4 -ServerAddresses ("192.168.0.1","8.8.8.8")
+
 Restart-Computer
 
 
@@ -20,7 +21,7 @@ Install-ADDSForest `
 -DatabasePath "C:\Windows\NTDS" `
 -DomainMode "WinThreshold" `
 -DomainName "maynooth.ads.electric-petrol.ie" `
--DomainNetbiosName "maynooth" `
+-DomainNetbiosName "eoinlyng" `
 -ForestMode "WinThreshold" `
 -InstallDns:$true `
 -LogPath "C:\Windows\NTDS" `
@@ -36,7 +37,7 @@ Install-WindowsFeature DHCP -IncludeManagementTools
 
 # Configure DHCP, add a single scope
 $SERVERNAME = "dc1"
-$FOREST = "maynooth.ads.electric-petrol.ie"
+$FOREST = "ads.eoinlyng.ie"
 $DNSNAME = $SERVERNAME + "." + $FOREST
 Add-DhcpServerInDC -DnsName $DNSNAME -IPAddress 10.34.6.11
 Add-DhcpServerv4Scope -Name VLAN1 ISP -StartRange 10.34.1.100 -EndRange 10.34.1.199 -SubnetMask 255.255.255.0 -State Active -Description "DHCP addresses for Hosts that don't require a static address"
@@ -75,74 +76,5 @@ Add-DhcpServerv4ExclusionRange -ScopeID 10.34.16.0 -StartRange 10.34.16.200 -End
 
 
 #Create DNS records for Servers storage and Hosts in Forward lookup zone
-Add-DnsServerResourceRecordA -Name "host1" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.2.11" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "host2" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.2.12" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "db1" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.6.31" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "db2" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.6.32" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "app1" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.6.33" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "app2" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.6.34" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "backupsvr" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.6.35" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "filesvr1" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.6.21" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "filesvr2" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.6.22" -TimeToLive 01:00:00
-Add-DnsServerResourceRecordA -Name "nas1" -ZoneName "maynooth.ads.electric-petrol.ie" -AllowUpdateAny -IPv4Address "10.34.9.21" -TimeToLive 01:00:00
-
-
-# Set time to sync'h with a local NTP server.
-w32tm /config /manualpeerlist:10.34.15.254 /syncfromflags:manual /update
-
-#Create OUs to Manage everything in Maynooth Branch
-New-ADOrganizationalUnit -Name "Maynooth" -Path "DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "People" -Path "OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie" 
-New-ADOrganizationalUnit -Name "Accounts" -Path "OU=People,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie" 
-New-ADOrganizationalUnit -Name "Domain Admins" -Path "OU=People,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie" 
-New-ADOrganizationalUnit -Name "Human Resources" -Path "OU=People,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie" 
-New-ADOrganizationalUnit -Name "Manuafacturing" -Path "OU=People,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie" 
-New-ADOrganizationalUnit -Name "Computers" -Path "OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "Clients" -Path "OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "Win10" -Path "OU=Clients,OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "Win11" -Path "OU=Clients,OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "Servers" -Path "OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "File Servers" -Path "OU=Servers,OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "Application Servers" -Path "OU=Servers,OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "Database Servers" -Path "OU=Servers,OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-New-ADOrganizationalUnit -Name "Domain Controllers" -Path "OU=Servers,OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-
-
-
-#Create Reverse lookup zones with Fortest wide replication
-Add-DnsServerPrimaryZone -NetworkID 10.34.1.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.2.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.3.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.4.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.5.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.6.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.7.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.8.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.9.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.10.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.11.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.13.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.14.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.15.0/24 -ReplicationScope "Forest"
-Add-DnsServerPrimaryZone -NetworkID 10.34.16.0/24 -ReplicationScope "Forest"
-
-#Create Reverse lookup PTR records for each server 
-Add-DnsServerResourceRecordPtr -Name "11" -ZoneName "2.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "host1.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "12" -ZoneName "2.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "host2.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "31" -ZoneName "6.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "db1.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "32" -ZoneName "6.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "db2.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "33" -ZoneName "6.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "app1.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "34" -ZoneName "6.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "app2.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "35" -ZoneName "6.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "backupsvr.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "21" -ZoneName "6.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "filesvr1.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "22" -ZoneName "6.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "filesvr2.maynooth.ads.electric-petrol.ie"
-Add-DnsServerResourceRecordPtr -Name "21" -ZoneName "9.34.10.in-addr.arpa" -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName "nas1.maynooth.ads.electric-petrol.ie"
-
-
-#Move all Domain Controllers to Domain Controller OU under Maynooth OU - run after completing build of dc2
-Get-ADComputer -filter * -SearchBase "OU=Domain Controllers,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie" | Move-ADObject -TargetPath "OU=Domain Controllers,OU=Servers,OU=Computers,OU=Maynooth,DC=maynooth,DC=ads,DC=electric-petrol,DC=ie"
-
-
-#Make dc2 a dhcp failover for all scopes in an active active active relationship with shared secret and load balance 70% dc1 30% dc2 max client lead time 2 hours
-
-Add-DhcpServerv4Failover -ComputerName "dc1.maynooth.ads.electric-petrol.ie" -Name "SFO-SIN-Failover" -PartnerServer "dc2.maynooth.ads.electric-petrol.ie" -ScopeId 10.34.1.0,10.34.2.0,10.34.3.0,10.34.4.0,10.34.5.0,10.34.6.0,10.34.7.0,10.34.8.0,10.34.9.0,10.34.10.0,10.34.11.0,10.34.13.0,10.34.14.0,10.34.15.0,10.34.16.0 -SharedSecret "Passw0rd" -LoadBalancePercent 70 -MaxClientLeadTime 2:00:00 -AutoStateTransition $True -StateSwitchInterval 2:00:00
+Add-DnsServerResourceRecordA -Name "host1" -ZoneName "ads.eoinlyng.ie" -AllowUpdateAny -IPv4Address "192.168.0.10" -TimeToLive 01:00:00
+A
