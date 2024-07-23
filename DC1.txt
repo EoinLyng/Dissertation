@@ -4,6 +4,9 @@ $SERVERNAME = "dc1"
 $FOREST = "ads.eoinlyng.ie"
 $DNSNAME = $SERVERNAME + "." + $FOREST
 
+#Set the timezone
+Set-TimeZone "GMT Standard Time"
+
 # Set the IP address for the DC 
 Rename-Computer -NewName $SERVERNAME
 Get-NetIPAddress
